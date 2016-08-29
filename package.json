@@ -1,0 +1,19 @@
+{
+  "name": "docker-marina",
+  "version": "1.0.0",
+  "description": "Utility for creating docker containers from a json definition",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/danielgary/docker-marina.git"
+  },
+  "author": "Daniel Gary <daniel@gatewayapps.com> (http://www.gatewayapps.com)",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/danielgary/docker-marina/issues"
+  },
+  "homepage": "https://github.com/danielgary/docker-marina#readme"
+}
