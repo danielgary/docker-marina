@@ -1,0 +1,18 @@
+{
+    "containers":[
+        {
+            "name": "nginx-test",
+            "image": "hello-world-nginx",
+            "tag": "latest",
+            "params": "-d",
+            "ports":{
+                "80": "80",
+                "3000": "3000"
+            },
+            "environment":{
+                
+            }
+
+        }
+    ]
+}
