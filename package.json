@@ -3,14 +3,13 @@
   "version": "1.0.1",
   "description": "Utility for creating docker containers from a json definition",
   "main": "index.js",
-"bin": {
+  "bin": {
     "docker-marina": "index.js"
   },
   "directories": {
     "bin": "./"
   },
   "scripts": {
-  
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -24,10 +23,10 @@
   },
   "homepage": "https://github.com/danielgary/docker-marina#readme",
   "dependencies": {
-    "args": "^2.0.0"
+    "args": "^2.0.0",
+    "left-pad": "^1.1.1"
   },
   "files": [
-
     "index.js"
   ]
 }

@@ -1,18 +1,67 @@
 {
-    "containers":[
+    "server_name": "ims-hub",
+    "containers": [
         {
-            "name": "nginx-test",
-            "image": "hello-world-nginx",
+            "name": "nys-hub",
+            "image": "ims.gatewayapps.com:5000/imshub",
             "tag": "latest",
-            "params": "-d",
-            "ports":{
-                "80": "80",
-                "3000": "3000"
+            "environment": {
+                "DATABASE_SERVER": "192.168.200.130",
+                "DATABASE_INSTANCE_NAME": "MSSQLSERVER",
+                "DATABASE_USERNAME": "ims.core.administration",
+                "DATABASE_NAME": "ims.core.administration",
+                "NODE_ENV": "production",
+                "PACKAGE_ID": "ims.core.administration",
+                "DATABASE_PASSWORD": "UAc4454ncGOcHFgX",
+                "HUB_DATABASE_NAME": "ims.core.administration",
+                "HUB_URL": "http://hub.ims.gateway",
+                "PORT": "3000",
+                "PACKAGE_SECRET": ""
             },
-            "environment":{
-                
+            "ports": [
+                {
+                    "public": "3000",
+                    "private": "3000"
+                }
+            ],
+            "web": {
+                "server_names": [
+                    "hub.ims.gateway"
+                ],
+                "location": "http://127.0.0.1:3000",
+                "listen": 80
             }
-
+        },
+        {
+            "name": "nys-statusform",
+            "image": "ims.gatewayapps.com:5000/nys-statusform",
+            "tag": "latest",
+            "environment": {
+                "DATABASE_SERVER": "192.168.200.130",
+                "DATABASE_INSTANCE_NAME": "MSSQLSERVER",
+                "DATABASE_USERNAME": "ims.core.administration",
+                "NODE_ENV": "production",
+                "DATABASE_NAME": "ims.core.administration",
+                "PACKAGE_ID": "nys.forms.changeOfStatus",
+                "DATABASE_PASSWORD": "UAc4454ncGOcHFgX",
+                "HUB_DATABASE_NAME": "ims.core.administration",
+                "HUB_URL": "http://hub.ims.gateway",
+                "PORT": "3001",
+                "PACKAGE_SECRET": ""
+            },
+            "ports": [
+                {
+                    "public": "3001",
+                    "private": "3001"
+                }
+            ],
+            "web": {
+                "server_names": [
+                    "statusform.ims.gateway"
+                ],
+                "location": "http://127.0.0.1:3001",
+                "listen": 80
+            }
         }
     ]
 }
