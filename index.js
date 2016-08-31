@@ -38,7 +38,7 @@ function startContainers(containers) {
         var ports = c.ports.map((p) => { return `-p ${p.public}:${p.private}` }).join(' ');
         var environment = Object.keys(c.environment).map((k) => {
             var v = c.environment[k];
-            return `-e ${k}=${v}`;
+            return `-e ${k}='${v}'`;
         }).join(' ');
 
         var name = c.name;

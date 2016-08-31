@@ -1,6 +1,6 @@
 {
   "name": "docker-marina",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Utility for creating docker containers from a json definition",
   "main": "index.js",
   "bin": {
