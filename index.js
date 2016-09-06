@@ -41,7 +41,7 @@ function startContainers(containers) {
             return `-e ${k}='${v}'`;
         }).join(' ');
 
-        var volumes = Object.Keys(c.volumes).map((k) => {
+        var volumes = Object.keys(c.volumes).map((k) => {
             var v = c.environment[k];
             return `-v ${k}:${v}`;
         }).join(' ');
