@@ -14,8 +14,11 @@ String.prototype.appendLine = function (newLine) {
 
 args
     .option('i', 'The json file containing container definitions')
+    .option('c', 'The container name to update. Otherwise all containers will be included');
 
 const flags = args.parse(process.argv);
+
+
 
 if (flags.i) {
 
@@ -37,6 +40,10 @@ if (flags.i) {
 
 function startContainers(containers) {
     containers.map((c) => {
+
+        if (flags.c && flags.c !== c.name)
+            return;
+
         var ports = c.ports.map((p) => { return `-p ${p.public}:${p.private}` }).join(' ');
         var environment = Object.keys(c.environment).map((k) => {
             var v = c.environment[k];
