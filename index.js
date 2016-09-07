@@ -6,6 +6,8 @@ const fs = require('fs');
 const sys = require('util');
 const exec = require('child_process').execSync;
 
+const quote = /^win/.test(process.platform) ? '"' : "'";
+console.log("Hola");
 String.prototype.appendLine = function (newLine) {
     return this + '\n' + newLine;
 }
@@ -38,7 +40,7 @@ function startContainers(containers) {
         var ports = c.ports.map((p) => { return `-p ${p.public}:${p.private}` }).join(' ');
         var environment = Object.keys(c.environment).map((k) => {
             var v = c.environment[k];
-            return `-e ${k}='${v}'`;
+            return `-e ${k}=${quote}${v}${quote}`;
         }).join(' ');
 
         var volumes = "";
