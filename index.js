@@ -110,7 +110,7 @@ function generateNginxConfiguration(containers) {
         .appendLine('pid /var/run/nginx.pid;')
         .appendLine('events { worker_connections 1024; }')
         .appendLine('http {')
-        .appendLine(`\tclient_max_body_size 2M;`)
+        .appendLine(`\tclient_max_body_size 5M;`)
 
     for (var i = 0; i < containers.length; i++) {
         body = body.appendLine(generateServerFromContainer(containers[i]));
