@@ -107,12 +107,10 @@ function generateNginxConfiguration(containers) {
 
     var body = 'user www-data;'
         .appendLine('worker_processes 4;')
-        .appendLine('client_max_body_size 2M;')
-        .appendLine('post_max_size 3M;')
-        .appendLine('upload_max_filesize = 2M;')
         .appendLine('pid /var/run/nginx.pid;')
         .appendLine('events { worker_connections 1024; }')
         .appendLine('http {')
+        .appendLine(`\tclient_max_body_size 2M;`)
 
     for (var i = 0; i < containers.length; i++) {
         body = body.appendLine(generateServerFromContainer(containers[i]));
