@@ -113,7 +113,9 @@ function generateNginxConfiguration(containers) {
         .appendLine(`\tclient_max_body_size 5M;`)
 
     for (var i = 0; i < containers.length; i++) {
-        body = body.appendLine(generateServerFromContainer(containers[i]));
+        if(containers[i].web){
+          body = body.appendLine(generateServerFromContainer(containers[i]));
+        }
     }
 
     body = body.appendLine('}');
