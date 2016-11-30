@@ -143,7 +143,8 @@ function generateServerFromContainer(container) {
 }
 
 function getNginxPorts(containers) {
-    return containers.map((c) => {
+    return containers.filter((c)=>{return c.web}).map((c) => {
+      if(c.web)
         return c.web.listen;
     }).filter((p, i, self) => { return self.indexOf(p) === i; });
 }
