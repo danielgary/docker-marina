@@ -57,6 +57,13 @@ function startContainers(containers) {
                 return `-v ${k}:${v}`;
             }).join(' ');
         }
+        var links = ""
+        if(c.links) {
+          links = Object.keys(c.links).map((k)=>{
+            var v = c.volumes[k]
+            return `-l ${k}:${v}`
+          }).join(' ')
+        }
         var name = c.name;
         var image = c.image;
 
@@ -68,7 +75,7 @@ function startContainers(containers) {
         sh(`docker stop ${name}`);
         sh(`docker rm ${name}`);
 
-        sh(`docker run -d ${ports} ${environment} ${volumes} --name ${name} ${image}`)
+        sh(`docker run -d ${ports} ${environment} ${links} ${volumes} --name ${name} ${image}`)
     });
 }
 
