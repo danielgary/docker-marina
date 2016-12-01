@@ -61,7 +61,7 @@ function startContainers(containers) {
         if(c.links) {
           links = Object.keys(c.links).map((k)=>{
             var v = c.links[k]
-            return `-l ${k}:${v}`
+            return `--link ${k}:${v}`
           }).join(' ')
         }
         var name = c.name;
