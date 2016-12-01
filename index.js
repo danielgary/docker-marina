@@ -82,19 +82,24 @@ function startContainers(containers) {
 function startNginxContainer(def) {
     var ports = getNginxPorts(def.containers);
     var name = `${def.server_name}-nginx`;
+    
     ports = ports
         .map((p) => { return `-p ${p}:${p}` })
         .join(' ');
-
+    // ports += ' -p 443:443'
 
 
     //stop existing nginx and remove it
     sh(`docker stop ${name}`);
     sh(`docker rm ${name}`);
 
+    // sh(`openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout cert.key -out cert.crt -batch`)
+
     //start new container
     sh(`docker run -d ${ports} --name ${name} nginx`);
     sh(`docker cp ./nginx.conf ${name}:/etc/nginx/nginx.conf`);
+    // sh(`docker cp ./cert.key ${name}:/etc/nginx/cert.key`);
+    // sh(`docker cp ./cert.crt ${name}:/etc/nginx/cert.crt`);
     sh(`docker exec ${name} nginx -s reload`)
 }
 
@@ -113,16 +118,17 @@ function generateNginxConfiguration(containers) {
     var outfile = './nginx.conf';
 
     var body = 'user www-data;'
-        .appendLine('worker_processes 4;')
+        .appendLine('worker_processes 6;')
         .appendLine('pid /var/run/nginx.pid;')
         .appendLine('events { worker_connections 1024; }')
         .appendLine('http {')
-        .appendLine(`\tclient_max_body_size 5M;`)
+        .appendLine(`\tclient_max_body_size 100M;`)
 
     for (var i = 0; i < containers.length; i++) {
         if(containers[i].web){
           body = body.appendLine(generateServerFromContainer(containers[i]));
         }
+        
     }
 
     body = body.appendLine('}');
@@ -134,10 +140,16 @@ function generateServerFromContainer(container) {
     var serverNames = container.web.server_names.join(' ');
 
     return "\tserver {"
-        .appendLine(`\t\tlisten ${container.web.listen};`)
+        .appendLine(`\t\tlisten 80;`)
         .appendLine(`\t\tserver_name ${serverNames};`)
+
         .appendLine(`\t\tlocation / {`, 8)
+        .appendLine(`\t\t\tproxy_set_header Host $host;`)
+        .appendLine(`\t\t\tproxy_set_header X-Real-IP $remote_addr;`)
+        .appendLine(`\t\t\tproxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;`)
+        .appendLine(`\t\t\tproxy_set_header X-Forwarded-Proto $scheme;`)
         .appendLine(`\t\t\tproxy_pass ${container.web.location};`)
+        .appendLine(`\t\t\tproxy_read_timeout 90;`)
         .appendLine('\t\t}')
         .appendLine('\t}');
 }
