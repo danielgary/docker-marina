@@ -64,6 +64,9 @@ function startContainers(containers) {
             return `--link ${k}:${v}`
           }).join(' ')
         }
+
+        var restartPolicy = '--restart=unless-stopped';
+
         var name = c.name;
         var image = c.image;
 
@@ -75,7 +78,7 @@ function startContainers(containers) {
         sh(`docker stop ${name}`);
         sh(`docker rm ${name}`);
 
-        sh(`docker run -d ${ports} ${environment} ${links} ${volumes} --name ${name} ${image}`)
+        sh(`docker run -d ${ports} ${environment} ${links} ${volumes} ${restartPolicy} --name ${name} ${image}`)
     });
 }
 
@@ -96,7 +99,7 @@ function startNginxContainer(def) {
     // sh(`openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout cert.key -out cert.crt -batch`)
 
     //start new container
-    sh(`docker run -d ${ports} --name ${name} nginx`);
+    sh(`docker run -d ${ports} --restart=always --name ${name} nginx`);
     sh(`docker cp ./nginx.conf ${name}:/etc/nginx/nginx.conf`);
     // sh(`docker cp ./cert.key ${name}:/etc/nginx/cert.key`);
     // sh(`docker cp ./cert.crt ${name}:/etc/nginx/cert.crt`);
