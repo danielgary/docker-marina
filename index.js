@@ -153,6 +153,9 @@ function generateServerFromContainer(container) {
         .appendLine(`\t\t\tproxy_set_header X-Forwarded-Proto $scheme;`)
         .appendLine(`\t\t\tproxy_pass ${container.web.location};`)
         .appendLine(`\t\t\tproxy_read_timeout 90;`)
+        .appendLine(`\t\t\tproxy_buffer_size 16k;`)
+        .appendLine(`\t\t\tproxy_buffers 8 32k;`)
+        .appendLine(`\t\t\tproxy_busy_buffers_size 32k;`)
         .appendLine('\t\t}')
         .appendLine('\t}');
 }
