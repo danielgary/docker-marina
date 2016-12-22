@@ -1,6 +1,6 @@
 {
   "name": "docker-marina",
-  "version": "1.2.8",
+  "version": "1.2.9",
   "description": "Utility for creating docker containers from a json definition",
   "main": "index.js",
   "bin": {
@@ -23,7 +23,7 @@
   },
   "homepage": "https://github.com/danielgary/docker-marina#readme",
   "dependencies": {
-    "args": "^2.0.0",
+    "args": "^2.2.1",
     "left-pad": "^1.1.1"
   },
   "files": [
