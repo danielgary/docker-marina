@@ -66,6 +66,7 @@ function startContainers(containers) {
     }
 
     var restartPolicy = '--restart=unless-stopped';
+    var configFileName = flags.i
 
     var name = c.name;
     var image = c.image;
@@ -79,12 +80,11 @@ function startContainers(containers) {
     sh(`docker rm ${name}`);
 
 
-
-    sh(`docker run -d ${ports} ${environment} ${links} ${volumes} ${restartPolicy} --name ${name} ${image}`)
+    sh(`docker run -d ${ports} ${environment} -e DOCKER_MARINA_CONFIG_FILE=${quote}${configFileName}${quote} ${links} ${volumes} ${restartPolicy} --name ${name} ${image}`)
 
     //if container def indicates container should receive configuration, do so
     if (c.includeConfiguration) {
-      sh(`docker cp ${flags.i} ${name}:/${flags.i}`)
+      sh(`docker cp --parents ${flags.i} ${name}:${flags.i}`)
     }
     if(c.installDockerMarina){
       sh(`docker exec ${name} npm i -g docker-marina`)
