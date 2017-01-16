@@ -1,0 +1,272 @@
+{
+  "server_name": "ims-hub",
+  "containers": [
+    {
+      "name": "nys-hub",
+      "includeConfiguration": true,
+      "installDockerMarina": true,
+      "image": "ims.gatewayapps.com:5000/imshub",
+      "tag": "latest",
+      "environment": {
+        "DATABASE_SERVER": "192.168.200.130",
+        "DATABASE_INSTANCE_NAME": "MSSQLSERVER",
+        "LOGIN_USERNAME": "ims.core.administration",
+        "LOGIN_PASSWORD": "G=*K3{{@o=YLh?A1?nC3V;WE=N7NghsP_",
+        "DATABASE_NAME": "ims.core.administration",
+        "NODE_ENV": "production",
+        "PACKAGE_ID": "ims.core.administration",
+        "HUB_DATABASE_NAME": "ims.core.administration",
+        "HUB_URL": "http://hub.ims.gateway",
+        "PORT": "3000",
+        "PACKAGE_SECRET": ""
+      },
+      "ports": [
+        {
+          "public": "3000",
+          "private": "3000"
+        }
+      ],
+      "volumes": {
+        "/var/run/docker.sock": "/var/run/docker.sock"
+      },
+      "web": {
+        "server_names": [
+          "hub.ims.gateway"
+        ],
+        "location": "http://hub.ims.gateway:3000",
+        "listen": 80
+      }
+    },
+    {
+      "name": "nys-maintenance-server",
+      "image": "ims.gatewayapps.com:5000/nys-maintenance-server",
+      "tag": "latest",
+      "environment": {
+        "DATABASE_SERVER": "192.168.200.130",
+        "LOGIN_USERNAME": "ims.packages.maintenance",
+        "LOGIN_PASSWORD": "P@$$w0rd!!",
+        "FILE_STORAGE_PATH": "/usr/local/www/files",
+        "DATABASE_INSTANCE_NAME": "MSSQLSERVER",
+        "DATABASE_NAME": "ims.packages.maintenance",
+        "ATTACHMENTS_PATH": "/usr/local/www/files/",
+        "NODE_ENV": "production",
+        "PACKAGE_ID": "ims.packages.maintenance",
+        "HUB_DATABASE_NAME": "ims.core.administration",
+        "HUB_URL": "http://hub.ims.gateway",
+        "PORT": "3002",
+        "PACKAGE_SECRET": "nfYSwNPPWS5Q3Nm9Uu4DfM4ySbmfBcWrroYQzsqx8imKaVyVtpZhc/noFqtbGKFMpkdGXSDWzw5589/gNGo6XKrbq5gsUKzxsX0t2X5o5RrLZNUYgfn4ot0WRGtmcnAiUC5WxGOZNDzkgSq7HUIwKG2HJo7kXMfZ4MAE9EpMAa7H9gc3dlA+D7Pu2TlTH8oR9vQjRLbIx6pFAobBRKkrRtlhHaL5g3Y18oEXuYucu8dDj8p8rx9+tr96UKsx/73sPWhW7WMY3vnZHojAhamj6MvTTcU5An//xIhZHHAfiW9BxnOpPkviuDW11QgeTjGUUmuOjrGRfTFRv7A72B+J6w=="
+      },
+      "ports": [
+        {
+          "public": "3002",
+          "private": "3002"
+        }
+      ],
+      "volumes": {
+        "/usr/local/ims/maintenance": "/usr/local/www/files"
+      },
+      "web": {
+        "server_names": [
+          "maintenance.ims.gateway"
+        ],
+        "location": "http://maintenance.ims.gateway:3002",
+        "listen": 80
+      }
+    },
+    {
+      "name": "nys-scheduling-server",
+      "image": "ims.gatewayapps.com:5000/nys-scheduling-server",
+      "tag": "latest",
+      "environment": {
+        "DATABASE_SERVER": "192.168.200.130",
+        "LOGIN_USERNAME": "ims.packages.scheduling",
+        "LOGIN_PASSWORD": "5_GJc8sDfxG!gFk_v*eqJyp7?_ZMf82k",
+        "DATABASE_INSTANCE_NAME": "MSSQLSERVER",
+        "DATABASE_NAME": "ims.packages.scheduling",
+        "EMAIL_HOST": "smtp.office365.com",
+        "EMAIL_USE_TLS": false,
+        "EMAIL_PORT": 587,
+        "EMAIL_USER": "john@gatewayapps.com",
+        "EMAIL_PASSWORD": "El1zab3th@murphy",
+        "EMAIL_TLS_CIPHERS": "SSLv3",
+        "NODE_ENV": "production",
+        "PACKAGE_ID": "ims.packages.scheduling",
+        "HUB_DATABASE_NAME": "ims.core.administration",
+        "HUB_URL": "http://hub.ims.gateway",
+        "PORT": "3003",
+        "PACKAGE_SECRET": "9xmTeQDwiwZcHkp6/pscf7YkFf4wKesM7xqU4a9B3HgKhuh80f1rRZw3v2osv/cxZbuw3ew3PQfireITJv3rBjwUo1hPC8djMCfxny6f1LOwxnvXMaUbJkRuFcsGs6BQBcyX+bUKr4inXq6mzMiFdJjWcryBxSLGQD0pIkKQyR0X8Ga9IQOxoUw8C1p4Rj2+xi4/nuYAVE5T5gfWHg7Vkduta78O3+c9pEqPoiDhoth6JgeHWWoHVbWjZlvEgX/7q9Z705s6nabNxyIsUxre2bOnV4HTgEsl/HX6qVrepd6ysk5tvhpnU3txVwEvAXXdkHgflB4IT6OdCvFFvJaNpA=="
+      },
+      "ports": [
+        {
+          "public": "3003",
+          "private": "3003"
+        }
+      ],
+      "volumes": {
+        "/usr/local/ims/scheduling": "/usr/local/www/files"
+      },
+      "web": {
+        "server_names": [
+          "scheduling.ims.gateway"
+        ],
+        "location": "http://scheduling.ims.gateway:3003",
+        "listen": 80
+      }
+    },
+    {
+      "name": "ims-training",
+      "image": "ims.gatewayapps.com:5000/ims-training",
+      "tag": "latest",
+      "environment": {
+        "DATABASE_SERVER": "192.168.200.130",
+        "LOGIN_USERNAME": "ims.packages.training",
+        "LOGIN_PASSWORD": "UAc4454ncGOcHFgX",
+        "DATABASE_INSTANCE_NAME": "MSSQLSERVER",
+        "DATABASE_NAME": "ims.packages.training",
+        "FILE_STORAGE_PATH": "/usr/local/www/files",
+        "EMAIL_HOST": "smtp.office365.com",
+        "EMAIL_USE_TLS": false,
+        "EMAIL_PORT": 587,
+        "EMAIL_USER": "john@gatewayapps.com",
+        "EMAIL_PASSWORD": "El1zab3th@murphy",
+        "EMAIL_TLS_CIPHERS": "SSLv3",
+        "NODE_ENV": "production",
+        "PACKAGE_ID": "ims.packages.training",
+        "HUB_DATABASE_NAME": "ims.core.administration",
+        "HUB_URL": "http://hub.ims.gateway",
+        "PORT": "3004",
+        "PACKAGE_SECRET": "SX3EeU7TPDX4O1Q3Wlf2CjQB+w0ta+c9nv+1FI9CQt8wmRRbpL0PLV4aNPSveBbV1n/HsifK70g/MfGfR4jaZ+AXp82hs7KwxB0kCm6SOVsGFDaobnanBrrym1nTMRjTfifklVJgQm+nK36oi2Tc0VjzJlPVReQmiMTLYnGHk87vNingUn87j4D149JaeinnbiS4ANk881QzjqEiAvwyqzUGm+znGQy+L4tQNhAiqdTtrj2+mq991+3ejLZIr09AkapPCqL/cIcwAzUB79EM26MiBpTx9iWgb0gaI0UbHGk9l+Wqvni1m7KRarh4EmdFjQmTSx9EZrX/lvaiRBCoRQ=="
+      },
+      "ports": [
+        {
+          "public": "3004",
+          "private": "3004"
+        }
+      ],
+      "volumes": {
+        "/usr/local/ims/training": "/usr/local/www/files"
+      },
+      "web": {
+        "server_names": [
+          "training.ims.gateway"
+        ],
+        "location": "http://training.ims.gateway:3004",
+        "listen": 80
+      }
+    },
+    {
+      "name": "ims-incident-reporting",
+      "image": "ims.gatewayapps.com:5000/ims-incident-reporting",
+      "tag": "latest",
+      "environment": {
+        "DATABASE_SERVER": "192.168.200.130",
+        "LOGIN_USERNAME": "ims.packages.incidentReporting",
+        "LOGIN_PASSWORD": "mx8Cdw8^L%XlQ#Xp4mn1NBv6h0Z^5m",
+        "DATABASE_INSTANCE_NAME": "MSSQLSERVER",
+        "DATABASE_NAME": "ims.packages.incidentReporting",
+        "FILE_STORAGE_PATH": "/usr/local/www/files",
+        "NODE_ENV": "production",
+        "PACKAGE_ID": "ims.packages.incidentReporting",
+        "HUB_DATABASE_NAME": "ims.core.administration",
+        "HUB_URL": "http://hub.ims.gateway",
+        "PORT": "3005",
+        "PACKAGE_SECRET": "i4YFkClrywZ72L9uNF4AxrF62QTKdm3syqz4OptO02cwvwR2tGkskU8cF1Aj2jIlFvI3EJ/f9upYd+yGm6eWBOYyMkDMQaOxVaJReXUK4cZaVk+JswIsWANn8ilWO6ftNZkkQv3zdmJjWn1YcNHHSgxZBYTGSSz6TuFS6ZYuaUwaGLGpB1SQI8VIx1Gcdg16Ct8s0O7h56JtjYTioArxAMWn4LjB6vKrz0dU4W+B3VoUbIoIXlPrq/E3DbLc4gncTz3s2lVDRbDweRrFW1OQMCwUSKPzUtAF2Sf7ykwggHzFM+ofRzY+dWSfXG8KabMR1rLZgwgS2abi+TGK4veRPw=="
+      },
+      "ports": [
+        {
+          "public": "3005",
+          "private": "3005"
+        }
+      ],
+      "volumes": {
+        "/usr/local/ims/incidents": "/usr/local/www/files"
+      },
+      "web": {
+        "server_names": [
+          "incidents.ims.gateway"
+        ],
+        "location": "http://incidents.ims.gateway:3005",
+        "listen": 80
+      }
+    },
+    {
+      "name": "ims-retention",
+      "image": "ims.gatewayapps.com:5000/ims-retention",
+      "tag": "latest",
+      "environment": {
+        "DATABASE_SERVER": "192.168.200.130",
+        "LOGIN_USERNAME": "ims.packages.retention",
+        "LOGIN_PASSWORD": "5_GJc8sDfxG!gFk_v*eqJyp7?_ZMf82k",
+        "DATABASE_INSTANCE_NAME": "MSSQLSERVER",
+        "DATABASE_NAME": "ims.packages.retention",
+        "FILE_STORAGE_PATH": "/usr/local/www/files",
+        "NODE_ENV": "production",
+        "PACKAGE_ID": "ims.packages.retention",
+        "HUB_DATABASE_NAME": "ims.core.administration",
+        "HUB_URL": "http://hub.ims.gateway",
+        "PORT": "3006",
+        "PACKAGE_SECRET": "apN0P2k1k7ftOk5XE3eYViWXJd+jnVazSiWly1p7JbO5Wm5Cch0K24PdlCaaaknWXJCe8B3LsYJY4GC6nv43GH0Uy7sgMNqfT/J6EGm91QG2QoeIvaB3VVvPUrbhILtkpzzXiRrw4E5qRGDrNA8OBllk85ElpYHpeDxIYMBJwHu1WzY+Q9ngPV8W8fHZAiOv/g/hPIx2lelPYTUQ6XIisuBHEOkoiW7BS/w70+DZO4YxDwpkPWmXjvCNhSjJKPwBTLCP5M6vW49xbw5ZlwEOCyTxHNzTqpUODvKDF7N2G/pRz7qzs+LjGwetefZS/95UWoRTfKnlDUlcH3tmLXiPMw=="
+      },
+      "ports": [
+        {
+          "public": "3006",
+          "private": "3006"
+        }
+      ],
+      "volumes": {
+        "/usr/local/ims/retention": "/usr/local/www/files"
+      },
+      "web": {
+        "server_names": [
+          "retention.ims.gateway"
+        ],
+        "location": "http://retention.ims.gateway:3006",
+        "listen": 80
+      }
+    },
+    {
+      "name": "ims-mysql",
+      "image": "mysql",
+      "tag": "latest",
+      "environment": {
+        "MYSQL_ROOT_PASSWORD": "|uN:%7_75_=1y|+21*89~78h^_%!.;1q",
+        "MYSQL_DATABASE": "piwik"
+      },
+      "ports": [
+        {
+          "public": "3306",
+          "private": "3306"
+        }
+      ],
+      "volumes": {
+        "/usr/local/mysql/config": "/etc/mysql",
+        "/usr/local/mysql/data": "/var/lib/mysql"
+      }
+    },
+    {
+      "name": "ims-piwik",
+      "image": "ims.gatewayapps.com:5000/gateway-piwik",
+      "tag": "latest",
+      "environment": {
+        "PIWIK_MYSQL_PASSWORD": "|uN:%7_75_=1y|+21*89~78h^_%!.;1q",
+        "PIWIK_MYSQL_USER": "root"
+      },
+      "ports": [
+        {
+          "public": "3500",
+          "private": "3500"
+        }
+      ],
+      "links": {
+        "ims-mysql": "mysql"
+      },
+      "web": {
+        "server_names": [
+          "analytics.ims.gateway"
+        ],
+        "location": "http://analytics.ims.gateway:3500",
+        "listen": 80
+      }
+    }
+  ]
+}
