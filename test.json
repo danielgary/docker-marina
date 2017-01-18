@@ -1,0 +1,37 @@
+{
+  "server_name": "ims-hub",
+  "ports": {
+    "mode": "auto",
+    "start": 3000
+  },
+  "containers": [
+    {
+      "name": "nys-hub",
+      "includeConfiguration": false,
+      "installDockerMarina": false,
+      "instances": 5,
+      "exposedPort": "3000",
+      "image": "ims.gatewayapps.com:5000/imshub",
+      "tag": "latest",
+      "environment": {
+        "DATABASE_SERVER": "192.168.200.130",
+        "DATABASE_INSTANCE_NAME": "MSSQLSERVER",
+        "LOGIN_USERNAME": "ims.core.administration",
+        "LOGIN_PASSWORD": "G=*K3{{@o=YLh?A1?nC3V;WE=N7NghsP_",
+        "DATABASE_NAME": "ims.core.administration",
+        "NODE_ENV": "production",
+        "PORT": 3000,
+        "PACKAGE_ID": "ims.core.administration",
+        "HUB_DATABASE_NAME": "ims.core.administration",
+        "HUB_URL": "http://192.168.200.38",
+        "PACKAGE_SECRET": ""
+      },
+      "web": {
+        "server_names": [
+          "192.168.200.38"
+        ],
+        "listen": 80
+      }
+    }
+  ]
+}

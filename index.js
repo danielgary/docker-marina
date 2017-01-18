@@ -5,6 +5,19 @@ const args = require('args');
 const fs = require('fs');
 const sys = require('util');
 const exec = require('child_process').execSync;
+var nginxPorts = []
+var currentPort = 3000
+var autoGeneratePorts = false
+
+function sh(command) {
+  try {
+    console.log(command);
+    exec(command);
+  }
+  catch (e) {
+
+  }
+}
 
 const quote = /^win/.test(process.platform) ? '"' : "'";
 console.log("Hola");
@@ -28,7 +41,13 @@ if (flags.i) {
     }
     else {
       var def = JSON.parse(c);
+      autoGeneratePorts = def.ports.mode === 'auto'
+      if (autoGeneratePorts) {
+        currentPort = def.ports.start
+      }
+
       generateNginxConfiguration(def.containers);
+      currentPort = def.ports.start
       startContainers(def.containers);
       startNginxContainer(def);
 
@@ -38,69 +57,90 @@ if (flags.i) {
 
 }
 
+function startContainer(c, ports, index) {
+  if (autoGeneratePorts) {
+    ports = `-p ${currentPort}:${c.exposedPort}`
+
+  }
+  var environment = Object.keys(c.environment).map((k) => {
+    var v = c.environment[k];
+    return `-e ${k}=${quote}${v}${quote}`;
+  }).join(' ');
+
+  var volumes = "";
+  if (c.volumes) {
+    volumes = Object.keys(c.volumes).map((k) => {
+      var v = c.volumes[k];
+      return `-v ${k}:${v}`;
+    }).join(' ');
+  }
+  var links = ""
+  if (c.links) {
+    links = Object.keys(c.links).map((k) => {
+      var v = c.links[k]
+      return `--link ${k}:${v}`
+    }).join(' ')
+  }
+
+  var restartPolicy = '--restart=unless-stopped';
+
+
+  var name = `${c.name}-${currentPort}`;
+  var image = c.image;
+
+
+  //pull latest
+  sh(`docker pull ${image}`);
+
+  //stop existing container and remove it
+  sh(`docker stop ${name}`);
+  sh(`docker rm ${name}`);
+
+
+  sh(`docker run -d ${ports} ${environment} ${links} ${volumes} ${restartPolicy} --name ${name} ${image}`)
+
+  //if container def indicates container should receive configuration, do so
+  if (c.includeConfiguration) {
+    sh(`docker cp ${flags.i} ${name}:/docker-marina.json`)
+  }
+  if (c.installDockerMarina) {
+    sh(`docker exec ${name} npm i -g docker-marina`)
+  }
+  nginxPorts.push(currentPort)
+  currentPort++
+}
+
 function startContainers(containers) {
   containers.map((c) => {
 
     if (flags.c && flags.c !== c.name)
       return;
-
-    var ports = c.ports.map((p) => { return `-p ${p.public}:${p.private}` }).join(' ');
-    var environment = Object.keys(c.environment).map((k) => {
-      var v = c.environment[k];
-      return `-e ${k}=${quote}${v}${quote}`;
-    }).join(' ');
-
-    var volumes = "";
-    if (c.volumes) {
-      volumes = Object.keys(c.volumes).map((k) => {
-        var v = c.volumes[k];
-        return `-v ${k}:${v}`;
-      }).join(' ');
-    }
-    var links = ""
-    if (c.links) {
-      links = Object.keys(c.links).map((k) => {
-        var v = c.links[k]
-        return `--link ${k}:${v}`
-      }).join(' ')
+    var ports = ''
+    if (c.ports) {
+      var ports = c.ports.map((p) => { return `-p ${p.public}:${p.private}` }).join(' ');
     }
 
-    var restartPolicy = '--restart=unless-stopped';
-    
-
-    var name = c.name;
-    var image = c.image;
-
-
-    //pull latest
-    sh(`docker pull ${image}`);
-
-    //stop existing container and remove it
-    sh(`docker stop ${name}`);
-    sh(`docker rm ${name}`);
-
-
-    sh(`docker run -d ${ports} ${environment} ${links} ${volumes} ${restartPolicy} --name ${name} ${image}`)
-
-    //if container def indicates container should receive configuration, do so
-    if (c.includeConfiguration) {
-      sh(`docker cp ${flags.i} ${name}:/docker-marina.json`)
+    var count = 1
+    if (c.instances) {
+      count = c.instances
     }
-    if(c.installDockerMarina){
-      sh(`docker exec ${name} npm i -g docker-marina`)
+    for (var i = 0; i < count; i++) {
+      startContainer(c, ports)
     }
+
   });
 }
 
 function startNginxContainer(def) {
-  var ports = getNginxPorts(def.containers);
+  //var ports = getNginxPorts(def.containers);
+
   var name = `${def.server_name}-nginx`;
 
-  ports = ports
-    .map((p) => { return `-p ${p}:${p}` })
-    .join(' ');
+  // var ports = nginxPorts
+  //   .map((p) => { return `-p ${p}:${p}` })
+  //   .join(' ');
   // ports += ' -p 443:443'
-
+  var ports = '-p 80:80'
 
   //stop existing nginx and remove it
   sh(`docker stop ${name}`);
@@ -117,15 +157,7 @@ function startNginxContainer(def) {
 }
 
 
-function sh(command) {
-  try {
-    console.log(command);
-    exec(command);
-  }
-  catch (e) {
 
-  }
-}
 
 function generateNginxConfiguration(containers) {
   var outfile = './nginx.conf';
@@ -152,7 +184,15 @@ function generateNginxConfiguration(containers) {
 function generateServerFromContainer(container) {
   var serverNames = container.web.server_names.join(' ');
 
-  return "\tserver {"
+  var upstream = `\tupstream ${container.name} {`
+  for (var i = 0; i < (container.instances || 1); i++) {
+    upstream = upstream.appendLine(`\t\tserver ${container.web.server_names[0]}:${currentPort};`)
+    currentPort++
+  }
+  upstream = upstream.appendLine(`\t}`)
+
+  upstream = upstream.appendLine('')
+    .appendLine("\tserver {")
     .appendLine(`\t\tlisten 80;`)
     .appendLine(`\t\tserver_name ${serverNames};`)
 
@@ -161,13 +201,14 @@ function generateServerFromContainer(container) {
     .appendLine(`\t\t\tproxy_set_header X-Real-IP $remote_addr;`)
     .appendLine(`\t\t\tproxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;`)
     .appendLine(`\t\t\tproxy_set_header X-Forwarded-Proto $scheme;`)
-    .appendLine(`\t\t\tproxy_pass ${container.web.location};`)
+    .appendLine(`\t\t\tproxy_pass http://${container.name};`)
     .appendLine(`\t\t\tproxy_read_timeout 90;`)
     .appendLine(`\t\t\tproxy_buffer_size 16k;`)
     .appendLine(`\t\t\tproxy_buffers 8 32k;`)
     .appendLine(`\t\t\tproxy_busy_buffers_size 32k;`)
     .appendLine('\t\t}')
     .appendLine('\t}');
+  return upstream
 }
 
 function getNginxPorts(containers) {
