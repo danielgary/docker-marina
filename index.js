@@ -167,7 +167,7 @@ function sp(command) {
 function generateNginxConfiguration(containers) {
   var outfile = './nginx.conf';
 
-  var body = 'user www-data;'
+  var body = 'user root;'
     .appendLine('worker_processes 6;')
     .appendLine('pid /var/run/nginx.pid;')
     .appendLine('events { worker_connections 1024; }')
@@ -199,15 +199,10 @@ function generateServerFromContainer(container) {
     result = result
       .appendLine(`\t\troot /data/${container.name};`)
       .appendLine(`\t\tindex index.html;`)
-    result = result.appendLine(`\t\tlocation / {`)
-      .appendLine(`\t\t\tadd_header Set-Cookie "HUB_URL=${container.environment.HUB_URL};Domain=${container.web.server_names[0]};Path=/;Max-Age=31536000";`)
-      .appendLine(`\t\t\tadd_header Set-Cookie "PACKAGE_ID=${container.environment.PACKAGE_ID};Domain=${container.web.server_names[0]};Path=/;Max-Age=31536000";`)
-      .appendLine(`\t\t\tindex index.html;`)
-      .appendLine(`\t\t\ttry_files $uri @api;`)
-      .appendLine(`\t\t\texpires max;`)
-      .appendLine(`\t\t}`)
     result = result.appendLine(`\t\tlocation @api {`)
       .appendLine(`\t\t\tproxy_set_header Host $host;`)
+      .appendLine(`\t\t\tadd_header Set-Cookie "HUB_URL=${container.environment.HUB_URL};Domain=${container.web.server_names[0]};Path=/;Max-Age=31536000";`)
+      .appendLine(`\t\t\tadd_header Set-Cookie "PACKAGE_ID=${container.environment.PACKAGE_ID};Domain=${container.web.server_names[0]};Path=/;Max-Age=31536000";`)
       .appendLine(`\t\t\tproxy_set_header X-Real-IP $remote_addr;`)
       .appendLine(`\t\t\tproxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;`)
       .appendLine(`\t\t\tproxy_set_header X-Forwarded-Proto $scheme;`)
@@ -217,6 +212,13 @@ function generateServerFromContainer(container) {
       .appendLine(`\t\t\tproxy_buffers 8 32k;`)
       .appendLine(`\t\t\tproxy_busy_buffers_size 32k;`)
       .appendLine('\t\t}')
+    result = result.appendLine(`\t\tlocation / {`)
+      .appendLine(`\t\t\tadd_header Set-Cookie "HUB_URL=${container.environment.HUB_URL};Domain=${container.web.server_names[0]};Path=/;Max-Age=31536000";`)
+      .appendLine(`\t\t\tadd_header Set-Cookie "PACKAGE_ID=${container.environment.PACKAGE_ID};Domain=${container.web.server_names[0]};Path=/;Max-Age=31536000";`)
+      .appendLine(`\t\t\ttry_files $uri /index.html @api;`)
+      .appendLine(`\t\t\texpires max;`)
+      .appendLine(`\t\t}`)
+
 
     // result = result.appendLine(`\t\tlocation /authenticate {`)
     //   .appendLine(`\t\t\tproxy_set_header Host $host;`)
@@ -234,6 +236,8 @@ function generateServerFromContainer(container) {
   } else {
     result = result.appendLine(`\t\tlocation / {`)
       .appendLine(`\t\t\tproxy_set_header Host $host;`)
+      .appendLine(`\t\t\tadd_header Set-Cookie "HUB_URL=${container.environment.HUB_URL};Domain=${container.web.server_names[0]};Path=/;Max-Age=31536000";`)
+      .appendLine(`\t\t\tadd_header Set-Cookie "PACKAGE_ID=${container.environment.PACKAGE_ID};Domain=${container.web.server_names[0]};Path=/;Max-Age=31536000";`)
       .appendLine(`\t\t\tproxy_set_header X-Real-IP $remote_addr;`)
       .appendLine(`\t\t\tproxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;`)
       .appendLine(`\t\t\tproxy_set_header X-Forwarded-Proto $scheme;`)
