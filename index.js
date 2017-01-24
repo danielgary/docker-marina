@@ -174,6 +174,13 @@ function generateNginxConfiguration(containers) {
     .appendLine('http {')
     .appendLine(`\tclient_max_body_size 1000M;`)
     .appendLine(`\tinclude  /etc/nginx/mime.types;`)
+    .appendLine('\tgzip              on;')
+    .appendLine('\tgzip_buffers      16 8k;')
+    .appendLine('\tgzip_comp_level   4;')
+    .appendLine('\tgzip_http_version 1.0;')
+    .appendLine('\tgzip_min_length   1280;')
+    .appendLine('\tgzip_types        text/plain text/css application/x-javascript text/xml application/xml application/xml+rss text/javascript image/x-icon image/bmp;')
+    .appendLine('\tgzip_vary         on;')
 
   for (var i = 0; i < containers.length; i++) {
     if (containers[i].web) {
