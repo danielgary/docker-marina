@@ -223,7 +223,7 @@ function generateServerFromContainer(container) {
       .appendLine(`\t\t\tinclude  /etc/nginx/mime.types;`)
       .appendLine(`\t\t\tadd_header Set-Cookie "HUB_URL=${container.environment.HUB_URL};Domain=${container.web.server_names[0]};Path=/;Max-Age=31536000";`)
       .appendLine(`\t\t\tadd_header Set-Cookie "PACKAGE_ID=${container.environment.PACKAGE_ID};Domain=${container.web.server_names[0]};Path=/;Max-Age=31536000";`)
-      .appendLine(`\t\t\ttry_files $uri $uri/ @api;`)
+      .appendLine(`\t\t\ttry_files $uri $uri/ =404;`)
       .appendLine(`\t\t\texpires max;`)
       .appendLine(`\t\t}`)
   } else {
