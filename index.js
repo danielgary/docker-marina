@@ -193,7 +193,8 @@ function generateServerFromContainer(container) {
   var result = "\tserver {"
     .appendLine(`\t\tlisten 80;`)
     .appendLine(`\t\tserver_name ${serverNames};`)
-
+    .appendLine(`\t\terror_log /var/log/nginx/${container.name}_error.log;`)
+    .appendLine(`\t\taccess_log /var/log/nginx/${container.name}_access.log;`)
   if (container.clientFiles) {
     result = result
       .appendLine(`\t\troot /data/${container.name};`)
