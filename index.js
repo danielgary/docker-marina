@@ -197,7 +197,7 @@ function generateServerFromContainer(container) {
     .appendLine(`\t\taccess_log /var/log/nginx/${container.name}_access.log;`)
   if (container.clientFiles) {
     result = result
-      .appendLine(`\t\troot /data/${container.name};`)
+      .appendLine(`\t\troot /data/${container.name}/app;`)
       .appendLine(`\t\tindex index.html;`)
     result = result.appendLine(`\t\tlocation /api {`)
       .appendLine(`\t\t\tproxy_set_header Host $host;`)
