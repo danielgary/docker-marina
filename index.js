@@ -179,7 +179,7 @@ function generateNginxConfiguration(containers) {
     .appendLine('\tgzip_comp_level   4;')
     .appendLine('\tgzip_http_version 1.0;')
     .appendLine('\tgzip_min_length   1280;')
-    .appendLine('\tgzip_types        text/plain text/css application/x-javascript text/xml application/xml application/xml+rss text/javascript image/x-icon image/bmp;')
+    .appendLine('\tgzip_types        text/plain text/css application/javascript text/html application/x-javascript text/xml application/xml application/xml+rss text/javascript image/x-icon image/bmp;')
     .appendLine('\tgzip_vary         on;')
 
   for (var i = 0; i < containers.length; i++) {
