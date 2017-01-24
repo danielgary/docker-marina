@@ -167,7 +167,7 @@ function sp(command) {
 function generateNginxConfiguration(containers) {
   var outfile = './nginx.conf';
 
-  var body = 'user root;'
+  var body = 'user www-data;'
     .appendLine('worker_processes 6;')
     .appendLine('pid /var/run/nginx.pid;')
     .appendLine('events { worker_connections 1024; }')
@@ -199,20 +199,7 @@ function generateServerFromContainer(container) {
     result = result
       .appendLine(`\t\troot /data/${container.name}/app;`)
       .appendLine(`\t\tindex index.html;`)
-    result = result.appendLine(`\t\tlocation /api {`)
-      .appendLine(`\t\t\tproxy_set_header Host $host;`)
-      .appendLine(`\t\t\tadd_header Set-Cookie "HUB_URL=${container.environment.HUB_URL};Domain=${container.web.server_names[0]};Path=/;Max-Age=31536000";`)
-      .appendLine(`\t\t\tadd_header Set-Cookie "PACKAGE_ID=${container.environment.PACKAGE_ID};Domain=${container.web.server_names[0]};Path=/;Max-Age=31536000";`)
-      .appendLine(`\t\t\tproxy_set_header X-Real-IP $remote_addr;`)
-      .appendLine(`\t\t\tproxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;`)
-      .appendLine(`\t\t\tproxy_set_header X-Forwarded-Proto $scheme;`)
-      .appendLine(`\t\t\tproxy_pass ${container.web.location};`)
-      .appendLine(`\t\t\tproxy_read_timeout 5m;`)
-      .appendLine(`\t\t\tproxy_buffer_size 16k;`)
-      .appendLine(`\t\t\tproxy_buffers 8 32k;`)
-      .appendLine(`\t\t\tproxy_busy_buffers_size 32k;`)
-      .appendLine('\t\t}')
-          result = result.appendLine(`\t\tlocation /authenticate {`)
+    result = result.appendLine(`\t\tlocation @api {`)
       .appendLine(`\t\t\tproxy_set_header Host $host;`)
       .appendLine(`\t\t\tadd_header Set-Cookie "HUB_URL=${container.environment.HUB_URL};Domain=${container.web.server_names[0]};Path=/;Max-Age=31536000";`)
       .appendLine(`\t\t\tadd_header Set-Cookie "PACKAGE_ID=${container.environment.PACKAGE_ID};Domain=${container.web.server_names[0]};Path=/;Max-Age=31536000";`)
@@ -228,6 +215,8 @@ function generateServerFromContainer(container) {
     result = result.appendLine(`\t\tlocation / {`)
       .appendLine(`\t\t\tadd_header Set-Cookie "HUB_URL=${container.environment.HUB_URL};Domain=${container.web.server_names[0]};Path=/;Max-Age=31536000";`)
       .appendLine(`\t\t\tadd_header Set-Cookie "PACKAGE_ID=${container.environment.PACKAGE_ID};Domain=${container.web.server_names[0]};Path=/;Max-Age=31536000";`)
+      .appendLine(`\t\t\ttry_files $uri @api;`)
+      .appendLine(`\t\t\texpires max;`)
       .appendLine(`\t\t}`)
 
 
