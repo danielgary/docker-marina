@@ -173,6 +173,7 @@ function generateNginxConfiguration(containers) {
     .appendLine('events { worker_connections 1024; }')
     .appendLine('http {')
     .appendLine(`\tclient_max_body_size 1000M;`)
+    .appendLine(`\tinclude  /etc/nginx/mime.types;`)
 
   for (var i = 0; i < containers.length; i++) {
     if (containers[i].web) {
@@ -193,7 +194,7 @@ function generateServerFromContainer(container) {
     .appendLine(`\t\tlisten 80;`)
     .appendLine(`\t\tserver_name ${serverNames};`)
   if (container.clientFiles) {
-    result = result.appendLine(`\t\tlocation /api {`)
+    result = result.appendLine(`\t\tlocation @api {`)
       .appendLine(`\t\t\tproxy_set_header Host $host;`)
       .appendLine(`\t\t\tproxy_set_header X-Real-IP $remote_addr;`)
       .appendLine(`\t\t\tproxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;`)
@@ -205,25 +206,25 @@ function generateServerFromContainer(container) {
       .appendLine(`\t\t\tproxy_busy_buffers_size 32k;`)
       .appendLine('\t\t}')
 
-    result = result.appendLine(`\t\tlocation /authenticate {`)
-      .appendLine(`\t\t\tproxy_set_header Host $host;`)
-      .appendLine(`\t\t\tproxy_set_header X-Real-IP $remote_addr;`)
-      .appendLine(`\t\t\tproxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;`)
-      .appendLine(`\t\t\tproxy_set_header X-Forwarded-Proto $scheme;`)
-      .appendLine(`\t\t\tproxy_pass ${container.web.location};`)
-      .appendLine(`\t\t\tproxy_read_timeout 5m;`)
-      .appendLine(`\t\t\tproxy_buffer_size 16k;`)
-      .appendLine(`\t\t\tproxy_buffers 8 32k;`)
-      .appendLine(`\t\t\tproxy_busy_buffers_size 32k;`)
-      .appendLine('\t\t}')
+    // result = result.appendLine(`\t\tlocation /authenticate {`)
+    //   .appendLine(`\t\t\tproxy_set_header Host $host;`)
+    //   .appendLine(`\t\t\tproxy_set_header X-Real-IP $remote_addr;`)
+    //   .appendLine(`\t\t\tproxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;`)
+    //   .appendLine(`\t\t\tproxy_set_header X-Forwarded-Proto $scheme;`)
+    //   .appendLine(`\t\t\tproxy_pass ${container.web.location};`)
+    //   .appendLine(`\t\t\tproxy_read_timeout 5m;`)
+    //   .appendLine(`\t\t\tproxy_buffer_size 16k;`)
+    //   .appendLine(`\t\t\tproxy_buffers 8 32k;`)
+    //   .appendLine(`\t\t\tproxy_busy_buffers_size 32k;`)
+    //   .appendLine('\t\t}')
 
 
     result = result.appendLine(`\t\tlocation / {`)
       .appendLine(`\t\t\troot /data/${container.name};`)
-      .appendLine(`\t\t\tinclude  /etc/nginx/mime.types;`)
+      
       .appendLine(`\t\t\tadd_header Set-Cookie "HUB_URL=${container.environment.HUB_URL};Domain=${container.web.server_names[0]};Path=/;Max-Age=31536000";`)
       .appendLine(`\t\t\tadd_header Set-Cookie "PACKAGE_ID=${container.environment.PACKAGE_ID};Domain=${container.web.server_names[0]};Path=/;Max-Age=31536000";`)
-      .appendLine(`\t\t\ttry_files $uri $uri/ =404;`)
+      .appendLine(`\t\t\ttry_files $uri $uri/ @api;`)
       .appendLine(`\t\t\texpires max;`)
       .appendLine(`\t\t}`)
   } else {
