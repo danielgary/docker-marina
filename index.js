@@ -193,7 +193,17 @@ function generateServerFromContainer(container) {
   var result = "\tserver {"
     .appendLine(`\t\tlisten 80;`)
     .appendLine(`\t\tserver_name ${serverNames};`)
+
   if (container.clientFiles) {
+    result = result
+      .appendLine(`\t\troot /data/${container.name};`)
+      .appendLine(`\t\tindex index.html;`)
+    result = result.appendLine(`\t\tlocation / {`)
+      .appendLine(`\t\t\tadd_header Set-Cookie "HUB_URL=${container.environment.HUB_URL};Domain=${container.web.server_names[0]};Path=/;Max-Age=31536000";`)
+      .appendLine(`\t\t\tadd_header Set-Cookie "PACKAGE_ID=${container.environment.PACKAGE_ID};Domain=${container.web.server_names[0]};Path=/;Max-Age=31536000";`)
+      .appendLine(`\t\t\ttry_files $uri $uri/ @api;`)
+      .appendLine(`\t\t\texpires max;`)
+      .appendLine(`\t\t}`)
     result = result.appendLine(`\t\tlocation @api {`)
       .appendLine(`\t\t\tproxy_set_header Host $host;`)
       .appendLine(`\t\t\tproxy_set_header X-Real-IP $remote_addr;`)
@@ -219,14 +229,6 @@ function generateServerFromContainer(container) {
     //   .appendLine('\t\t}')
 
 
-    result = result.appendLine(`\t\tlocation / {`)
-      .appendLine(`\t\t\troot /data/${container.name};`)
-      .appendLine(`\t\t\tindex index.html;`)
-      .appendLine(`\t\t\tadd_header Set-Cookie "HUB_URL=${container.environment.HUB_URL};Domain=${container.web.server_names[0]};Path=/;Max-Age=31536000";`)
-      .appendLine(`\t\t\tadd_header Set-Cookie "PACKAGE_ID=${container.environment.PACKAGE_ID};Domain=${container.web.server_names[0]};Path=/;Max-Age=31536000";`)
-      .appendLine(`\t\t\ttry_files $uri $uri/index.html $uri/ @api;`)
-      .appendLine(`\t\t\texpires max;`)
-      .appendLine(`\t\t}`)
   } else {
     result = result.appendLine(`\t\tlocation / {`)
       .appendLine(`\t\t\tproxy_set_header Host $host;`)
