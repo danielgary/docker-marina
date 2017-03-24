@@ -190,8 +190,29 @@ function generateNginxConfiguration(containers) {
   }
 
   body = body.appendLine('}');
+  for(var i=0;i<containers.length;i++){
+    if(containers[i].stream) {
+
+    }
+  }
 
   fs.writeFileSync("./nginx.conf", body);
+}
+
+function generateStreamFromContainer(index, container){
+  var listen = container.stream.listen
+  var forwardPort = container.stream.forward_port
+  var serverName = container.stream.server_name
+
+  return "\tserver {"
+    .appendLine(`\t\tlisten ${listen};`)
+    .appendLine(`\t\tproxy_connect_timeout 1s;`)
+    .appendLine(`\t\tproxy_timeout 3s;`)
+    .appendLine(`\t\tproxy_pass stream_${index};`)
+    .appendLine(`\t\}`)
+    .appendLine(`\tupstream stream_${index} {`)
+    .appendLine(`\t\tserver ${serverName}:${forwardPort}`)
+    .appendLine(`\t}`)
 }
 
 function generateServerFromContainer(container) {
@@ -203,13 +224,15 @@ function generateServerFromContainer(container) {
     .appendLine(`\t\terror_log /var/log/nginx/${container.name}_error.log;`)
     .appendLine(`\t\taccess_log /var/log/nginx/${container.name}_access.log;`)
   if (container.clientFiles) {
+    
     result = result
       .appendLine(`\t\troot /data/${container.name}/app;`)
       .appendLine(`\t\tindex index.html;`)
     result = result.appendLine(`\t\tlocation @api {`)
       .appendLine(`\t\t\tproxy_set_header Host $host;`)
-      .appendLine(`\t\t\tadd_header Set-Cookie "HUB_URL=${container.environment.HUB_URL};Domain=${container.web.server_names[0]};Path=/;Max-Age=31536000";`)
-      .appendLine(`\t\t\tadd_header Set-Cookie "PACKAGE_ID=${container.environment.PACKAGE_ID};Domain=${container.web.server_names[0]};Path=/;Max-Age=31536000";`)
+      .appendLine(`\t\t\tadd_header Set-Cookie "HUB_URL=${encodeURIComponent(container.environment.HUB_URL)};Path=/";`)
+      .appendLine(`\t\t\tadd_header Set-Cookie "PACKAGE_ID=${encodeURIComponent(container.environment.PACKAGE_ID)};Path=/";`)
+      .appendLine(`\t\t\tadd_header X-UA-Compatible "IE=Edge";`)
       .appendLine(`\t\t\tproxy_set_header X-Real-IP $remote_addr;`)
       .appendLine(`\t\t\tproxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;`)
       .appendLine(`\t\t\tproxy_set_header X-Forwarded-Proto $scheme;`)
@@ -220,8 +243,9 @@ function generateServerFromContainer(container) {
       .appendLine(`\t\t\tproxy_busy_buffers_size 32k;`)
       .appendLine('\t\t}')
     result = result.appendLine(`\t\tlocation / {`)
-      .appendLine(`\t\t\tadd_header Set-Cookie "HUB_URL=${container.environment.HUB_URL};Domain=${container.web.server_names[0]};Path=/;Max-Age=31536000";`)
-      .appendLine(`\t\t\tadd_header Set-Cookie "PACKAGE_ID=${container.environment.PACKAGE_ID};Domain=${container.web.server_names[0]};Path=/;Max-Age=31536000";`)
+      .appendLine(`\t\t\tadd_header Set-Cookie "HUB_URL=${encodeURIComponent(container.environment.HUB_URL)};Path=/";`)
+      .appendLine(`\t\t\tadd_header Set-Cookie "PACKAGE_ID=${encodeURIComponent(container.environment.PACKAGE_ID)};Path=/";`)
+      .appendLine(`\t\t\tadd_header X-UA-Compatible "IE=Edge";`)
       .appendLine(`\t\t\ttry_files $uri $uri/index.html @api;`)
       .appendLine(`\t\t\texpires max;`)
       .appendLine(`\t\t}`)
@@ -243,8 +267,9 @@ function generateServerFromContainer(container) {
   } else {
     result = result.appendLine(`\t\tlocation / {`)
       .appendLine(`\t\t\tproxy_set_header Host $host;`)
-      .appendLine(`\t\t\tadd_header Set-Cookie "HUB_URL=${container.environment.HUB_URL};Domain=${container.web.server_names[0]};Path=/;Max-Age=31536000";`)
-      .appendLine(`\t\t\tadd_header Set-Cookie "PACKAGE_ID=${container.environment.PACKAGE_ID};Domain=${container.web.server_names[0]};Path=/;Max-Age=31536000";`)
+      .appendLine(`\t\t\tadd_header Set-Cookie "HUB_URL=${encodeURIComponent(container.environment.HUB_URL)};Path=/";`)
+      .appendLine(`\t\t\tadd_header Set-Cookie "PACKAGE_ID=${encodeURIComponent(container.environment.PACKAGE_ID)};Path=/";`)
+      .appendLine(`\t\t\tadd_header X-UA-Compatible "IE=Edge";`)
       .appendLine(`\t\t\tproxy_set_header X-Real-IP $remote_addr;`)
       .appendLine(`\t\t\tproxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;`)
       .appendLine(`\t\t\tproxy_set_header X-Forwarded-Proto $scheme;`)
