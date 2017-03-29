@@ -51,6 +51,11 @@ function startContainers(containers) {
     if (flags.c && flags.c !== c.name)
       return;
 
+    var network = ''
+    if (c.network) {
+      network = `--net=${c.network}`
+    }
+
     var ports = c.ports.map((p) => { return `-p ${p.public}:${p.private}` }).join(' ');
     var environment = Object.keys(c.environment).map((k) => {
       var v = c.environment[k];
@@ -87,7 +92,7 @@ function startContainers(containers) {
     sh(`docker rm ${name}`);
 
 
-    sh(`docker run -d ${ports} ${environment} ${links} ${volumes} ${restartPolicy} --name ${name} ${image}`)
+    sh(`docker run -d ${network} ${ports} ${environment} ${links} ${volumes} ${restartPolicy} --name ${name} ${image}`)
 
     //if container def indicates container should receive configuration, do so
     if (c.includeConfiguration) {
