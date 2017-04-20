@@ -138,11 +138,8 @@ function startNginxContainer(def) {
 
   sh(`rm -rf temp`)
 
-  sh(`docker cp ./nginx.conf ${name}:/etc/nginx/nginx.conf`);
-
-  // sh(`docker cp ./cert.key ${name}:/etc/nginx/cert.key`);
-  // sh(`docker cp ./cert.crt ${name}:/etc/nginx/cert.crt`);
-  sh(`docker exec ${name} nginx -s reload`)
+  sh(`cp ./nginx.conf /etc/nginx/nginx.conf`);
+  sh(`nginx -s reload`)
 }
 
 
@@ -231,7 +228,7 @@ function generateServerFromContainer(container) {
   if (container.clientFiles) {
     
     result = result
-      .appendLine(`\t\troot /data/${container.name}/app;`)
+      .appendLine(`\t\troot ${container.clientFiles};`)
       .appendLine(`\t\tindex index.html;`)
     result = result.appendLine(`\t\tlocation @api {`)
       .appendLine(`\t\t\tproxy_set_header Host $host;`)
