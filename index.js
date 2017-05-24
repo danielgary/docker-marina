@@ -18,6 +18,7 @@ String.prototype.appendLine = function (newLine) {
 args
   .option('i', 'The json file containing container definitions')
   .option('c', 'The container name to update. Otherwise all containers will be included')
+  .option('e', 'Set expiry time for static files')
   .option('n', 'Ignore containers, just rebuild nginx');
 
 const flags = args.parse(process.argv);
@@ -121,7 +122,8 @@ function startNginxContainer(def) {
   // sh(`openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout cert.key -out cert.crt -batch`)
 
   //start new container
-  sh(`docker run -d ${ports} --restart=always --name ${name} nginx`);
+  sh(`docker pull gatewayapps/ims-nginx`)
+  sh(`docker run -d ${ports} --restart=always --name ${name} gatewayapps/ims-nginx`);
   sh(`mkdir temp`)
   sh(`docker exec ${name} mkdir -p /data`)
   for (var i = 0; i < def.containers.length; i++) {
@@ -142,7 +144,7 @@ function startNginxContainer(def) {
 
   // sh(`docker cp ./cert.key ${name}:/etc/nginx/cert.key`);
   // sh(`docker cp ./cert.crt ${name}:/etc/nginx/cert.crt`);
-  sh(`docker exec ${name} nginx -s reload`)
+  sh(`docker exec ${name} supervisorctl restart nginx`)
 }
 
 
@@ -178,7 +180,7 @@ function generateNginxConfiguration(containers) {
     .appendLine('events { worker_connections 1024; }')
     .appendLine('http {')
     .appendLine(`\tclient_max_body_size 1000M;`)
-    .appendLine(`\tinclude  /etc/nginx/mime.types;`)
+    .appendLine(`\tinclude  /opt/openresty/nginx/conf/mime.types;`)
     .appendLine('\tgzip              on;')
     .appendLine('\tgzip_buffers      16 8k;')
     .appendLine('\tgzip_comp_level   4;')
@@ -229,14 +231,14 @@ function generateServerFromContainer(container) {
     .appendLine(`\t\terror_log /var/log/nginx/${container.name}_error.log;`)
     .appendLine(`\t\taccess_log /var/log/nginx/${container.name}_access.log;`)
   if (container.clientFiles) {
-    
+    const expiryTime = flags.e || '1h'
     result = result
       .appendLine(`\t\troot /data/${container.name}/app;`)
       .appendLine(`\t\tindex index.html;`)
     result = result.appendLine(`\t\tlocation @api {`)
       .appendLine(`\t\t\tproxy_set_header Host $host;`)
-      .appendLine(`\t\t\tadd_header Set-Cookie "HUB_URL=${encodeURIComponent(container.environment.HUB_URL)};Path=/";`)
-      .appendLine(`\t\t\tadd_header Set-Cookie "PACKAGE_ID=${encodeURIComponent(container.environment.PACKAGE_ID)};Path=/";`)
+      .appendLine(`\t\t\tset_by_lua $expires_time 'return ngx.cookie_time(ngx.time()+31536000)';`)
+			.appendLine(`\t\t\tadd_header Set-Cookie "HUB_URL=${encodeURIComponent(container.environment.HUB_URL)};Path=/;expires=$expires_time;Max-Age=31536000";`)
       .appendLine(`\t\t\tadd_header X-UA-Compatible "IE=Edge";`)
       .appendLine(`\t\t\tproxy_set_header X-Real-IP $remote_addr;`)
       .appendLine(`\t\t\tproxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;`)
@@ -248,32 +250,18 @@ function generateServerFromContainer(container) {
       .appendLine(`\t\t\tproxy_busy_buffers_size 32k;`)
       .appendLine('\t\t}')
     result = result.appendLine(`\t\tlocation / {`)
-      .appendLine(`\t\t\tadd_header Set-Cookie "HUB_URL=${encodeURIComponent(container.environment.HUB_URL)};Path=/";`)
-      .appendLine(`\t\t\tadd_header Set-Cookie "PACKAGE_ID=${encodeURIComponent(container.environment.PACKAGE_ID)};Path=/";`)
+      .appendLine(`\t\t\tset_by_lua $expires_time 'return ngx.cookie_time(ngx.time()+31536000)';`)
+			.appendLine(`\t\t\tadd_header Set-Cookie "HUB_URL=${encodeURIComponent(container.environment.HUB_URL)};Path=/;expires=$expires_time;Max-Age=31536000";`)
       .appendLine(`\t\t\tadd_header X-UA-Compatible "IE=Edge";`)
       .appendLine(`\t\t\ttry_files $uri $uri/index.html @api;`)
-      .appendLine(`\t\t\texpires max;`)
+      .appendLine(`\t\t\texpires ${expiryTime};`)
       .appendLine(`\t\t}`)
-
-
-    // result = result.appendLine(`\t\tlocation /authenticate {`)
-    //   .appendLine(`\t\t\tproxy_set_header Host $host;`)
-    //   .appendLine(`\t\t\tproxy_set_header X-Real-IP $remote_addr;`)
-    //   .appendLine(`\t\t\tproxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;`)
-    //   .appendLine(`\t\t\tproxy_set_header X-Forwarded-Proto $scheme;`)
-    //   .appendLine(`\t\t\tproxy_pass ${container.web.location};`)
-    //   .appendLine(`\t\t\tproxy_read_timeout 5m;`)
-    //   .appendLine(`\t\t\tproxy_buffer_size 16k;`)
-    //   .appendLine(`\t\t\tproxy_buffers 8 32k;`)
-    //   .appendLine(`\t\t\tproxy_busy_buffers_size 32k;`)
-    //   .appendLine('\t\t}')
-
 
   } else {
     result = result.appendLine(`\t\tlocation / {`)
       .appendLine(`\t\t\tproxy_set_header Host $host;`)
-      .appendLine(`\t\t\tadd_header Set-Cookie "HUB_URL=${encodeURIComponent(container.environment.HUB_URL)};Path=/";`)
-      .appendLine(`\t\t\tadd_header Set-Cookie "PACKAGE_ID=${encodeURIComponent(container.environment.PACKAGE_ID)};Path=/";`)
+      .appendLine(`\t\t\tset_by_lua $expires_time 'return ngx.cookie_time(ngx.time()+31536000)';`)
+			.appendLine(`\t\t\tadd_header Set-Cookie "HUB_URL=${encodeURIComponent(container.environment.HUB_URL)};Path=/;expires=$expires_time;Max-Age=31536000";`)
       .appendLine(`\t\t\tadd_header X-UA-Compatible "IE=Edge";`)
       .appendLine(`\t\t\tproxy_set_header X-Real-IP $remote_addr;`)
       .appendLine(`\t\t\tproxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;`)
