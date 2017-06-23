@@ -83,17 +83,17 @@ function startContainers(containers) {
 
     var name = c.name;
     var image = c.image;
-
+    var tag = c.tag || 'latest'
 
     //pull latest
-    sh(`docker pull ${image}`);
+    sh(`docker pull ${image}:${tag}`);
 
     //stop existing container and remove it
     sh(`docker stop ${name}`);
     sh(`docker rm ${name}`);
 
 
-    sh(`docker run -d ${network} ${ports} ${environment} ${links} ${volumes} ${restartPolicy} --name ${name} ${image}`)
+    sh(`docker run -d ${network} ${ports} ${environment} ${links} ${volumes} ${restartPolicy} --name ${name} ${image}:${tag}`)
 
     //if container def indicates container should receive configuration, do so
     if (c.includeConfiguration) {
